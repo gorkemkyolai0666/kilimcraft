@@ -1,0 +1,25 @@
+{
+  "projectName": "KilimCraft",
+  "designDirection": "Anatolian Heritage Neo-Craft",
+  "stitchProjectId": "projects/17101809378560866681",
+  "designSystemAsset": "assets/16830935934949010725",
+  "designTokens": {
+    "projectName": "KilimCraft",
+    "designDirection": "Anatolian Heritage Neo-Craft",
+    "colors": {
+      "indigoDeep": "#1E3A5F",
+      "saffronGold": "#D4A017",
+      "terracotta": "#C4622D",
+      "woolCream": "#F7F3ED"
+    },
+    "fonts": {
+      "heading": "EB Garamond",
+      "body": "Outfit"
+    },
+    "layout": "icon-rail-sidebar-geometric",
+    "ports": {
+      "frontend": 3660,
+      "backend": 4660
+    }
+  }
+}

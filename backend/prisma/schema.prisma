@@ -1,0 +1,214 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  admin
+  workshop_manager
+  master_weaver
+  quality_inspector
+  sales_coordinator
+}
+
+enum WorkshopStatus {
+  active
+  inactive
+  renovating
+}
+
+enum SkillLevel {
+  apprentice
+  journeyman
+  master
+}
+
+enum WeaverStatus {
+  active
+  inactive
+}
+
+enum LoomStatus {
+  active
+  maintenance
+  idle
+}
+
+enum WeavingOrderStatus {
+  pending
+  in_progress
+  completed
+  cancelled
+}
+
+enum ProductionRunStatus {
+  in_progress
+  completed
+  paused
+}
+
+enum InspectionResult {
+  pass
+  fail
+  review
+}
+
+enum ShipmentStatus {
+  pending
+  shipped
+  delivered
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  name      String
+  role      UserRole @default(workshop_manager)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Workshop {
+  id           String         @id @default(uuid())
+  name         String
+  city         String
+  address      String
+  foundedYear  Int
+  status       WorkshopStatus @default(active)
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+
+  weavers Weaver[]
+  looms   Loom[]
+}
+
+model Weaver {
+  id          String      @id @default(uuid())
+  name        String
+  skillLevel  SkillLevel  @default(apprentice)
+  phone       String
+  workshopId  String
+  workshop    Workshop    @relation(fields: [workshopId], references: [id])
+  status      WeaverStatus @default(active)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  productionRuns ProductionRun[]
+}
+
+model Loom {
+  id         String     @id @default(uuid())
+  code       String     @unique
+  widthCm    Float
+  loomType   String
+  status     LoomStatus @default(active)
+  workshopId String
+  workshop   Workshop   @relation(fields: [workshopId], references: [id])
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+
+  weavingOrders WeavingOrder[]
+}
+
+model Pattern {
+  id           String   @id @default(uuid())
+  name         String
+  region       String
+  motifType    String
+  colorPalette String
+  knotDensity  Int
+  widthCm      Float
+  lengthCm     Float
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  weavingOrders WeavingOrder[]
+}
+
+model YarnBatch {
+  id        String   @id @default(uuid())
+  batchCode String   @unique
+  fiberType String
+  color     String
+  weightKg  Float
+  supplier  String
+  unitCost  Float
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model WeavingOrder {
+  id         String             @id @default(uuid())
+  orderCode  String             @unique
+  clientName String
+  patternId  String
+  pattern    Pattern            @relation(fields: [patternId], references: [id])
+  loomId     String
+  loom       Loom               @relation(fields: [loomId], references: [id])
+  widthCm    Float
+  lengthCm   Float
+  status     WeavingOrderStatus @default(pending)
+  deadline   DateTime
+  createdAt  DateTime           @default(now())
+  updatedAt  DateTime           @updatedAt
+
+  productionRuns     ProductionRun[]
+  qualityInspections QualityInspection[]
+  shipments          Shipment[]
+}
+
+model ProductionRun {
+  id          String              @id @default(uuid())
+  runDate     DateTime
+  hoursWorked Float
+  cmCompleted Float
+  orderId     String
+  order       WeavingOrder        @relation(fields: [orderId], references: [id])
+  weaverId    String
+  weaver      Weaver              @relation(fields: [weaverId], references: [id])
+  status      ProductionRunStatus @default(in_progress)
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+}
+
+model QualityInspection {
+  id             String           @id @default(uuid())
+  inspectionDate DateTime
+  score          Int
+  defectCount    Int
+  notes          String           @default("")
+  orderId        String
+  order          WeavingOrder     @relation(fields: [orderId], references: [id])
+  result         InspectionResult
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+}
+
+model Client {
+  id        String   @id @default(uuid())
+  name      String
+  company   String
+  city      String
+  phone     String
+  email     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Shipment {
+  id           String         @id @default(uuid())
+  trackingCode String         @unique
+  destination  String
+  weightKg     Float
+  shipDate     DateTime
+  orderId      String
+  order        WeavingOrder   @relation(fields: [orderId], references: [id])
+  status       ShipmentStatus @default(pending)
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+}
